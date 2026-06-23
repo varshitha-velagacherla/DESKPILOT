@@ -1,0 +1,74 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+*.pyd
+*.so
+*.egg
+*.egg-info/
+build/
+dist/
+wheels/
+*.whl
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv
+venv/
+ENV/
+env/
+.env
+.env.local
+.env.*.local
+
+# IDE and Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.project
+.pydevproject
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific
+Thumbs.db
+*.lnk
+.directory
+
+# Project-specific
+/notebooks/
+/logs/
+/memory/
+!.gitkeep
+
+# Database and cache files
+*.sqlite3
+*.db
+chroma_db/
+.chroma/
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+.hypothesis/
+*.cover
+
+# IDE specific
+*.iml
+.gradle
+.classpath
+.c9/
+*.launch
+.settings/
+
+# Development
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+dist/
+site/
+*.log
