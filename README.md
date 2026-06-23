@@ -341,11 +341,3 @@ Useful for:
 - tool execution tracing
 - wake word diagnostics
 
----
-
-
-# Author
-
--Venky
-
-
