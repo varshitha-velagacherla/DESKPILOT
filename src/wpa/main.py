@@ -1,5 +1,5 @@
 """
-main.py  —  Windows Productivity Agent
+main.py  —  Linux Productivity Agent (Ubuntu port)
 
 Fixes from previous version:
   1. signal_handler only sets flag — never calls sys.exit() or speak()
@@ -43,8 +43,8 @@ logger = logging.getLogger(__name__)
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 OLLAMA_API_URL           = os.getenv("OLLAMA_API_URL",           "http://localhost:11434")
-OLLAMA_MODEL             = os.getenv("OLLAMA_MODEL",             "llama3.1:8b")
-WAKE_WORD                = os.getenv("WAKE_WORD",                "hey_jarvis")
+OLLAMA_MODEL             = os.getenv("OLLAMA_MODEL",             "qwen2.5:1.5b")
+WAKE_WORD                = os.getenv("WAKE_WORD",                "alexa")
 WAKE_WORD_THRESHOLD      = float(os.getenv("WAKE_WORD_THRESHOLD",     "0.05"))
 WAKE_WORD_TIMEOUT        = int(os.getenv("WAKE_WORD_TIMEOUT",         "30"))
 CONVERSATION_TIMEOUT     = int(os.getenv("CONVERSATION_TIMEOUT",      "15"))
@@ -151,7 +151,13 @@ def run_agent(user_input: str, debug: bool = False) -> str:
 def initialize_pipeline() -> bool:
     global wake_word_detector
 
-    logger.info("Initializing Windows Productivity Agent...")
+    from src.wpa.system.platform_utils import SESSION_TYPE
+    logger.info(f"Initializing Linux Productivity Agent... session={SESSION_TYPE}")
+    if SESSION_TYPE == "wayland":
+        logger.warning(
+            "Wayland session detected. Degraded features: wmctrl/xdotool (window listing), "
+            "some tray backends. For full functionality, log out and select 'Ubuntu on Xorg'."
+        )
 
     # Check Ollama
     try:
@@ -301,7 +307,7 @@ def run_conversation_session() -> bool:
 
 def main():
     print("\n" + "=" * 60)
-    print("      Windows Productivity Agent (WPA)")
+    print("      Linux Productivity Agent (WPA)")
     print("=" * 60)
 
     signal.signal(signal.SIGINT, signal_handler)

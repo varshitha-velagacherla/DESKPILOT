@@ -21,10 +21,10 @@ load_dotenv()  # take environment variables from .env file
 MODEL_NAME = os.getenv("OLLAMA_MODEL")   # change to your model
 
 _llm = ChatOllama(
-    model=MODEL_NAME,
-    temperature=0.1,          
+    model=MODEL_NAME or "qwen2.5:1.5b",
+    temperature=0.1,
     base_url="http://localhost:11434",
-    format="json",            # force JSON output mode
+    format="json",
 )
 
 # ── The complete tool catalogue given to the classifier ───────────────────────
@@ -55,7 +55,7 @@ AVAILABLE TOOLS:
 
 # ── The classifier prompt ─────────────────────────────────────────────────────
 CLASSIFIER_PROMPT = f"""
-You are an intent classifier for a Windows voice assistant.
+You are an intent classifier for a Linux voice assistant.
 Your ONLY job is to output valid JSON. Nothing else.
 
 {TOOL_CATALOGUE}

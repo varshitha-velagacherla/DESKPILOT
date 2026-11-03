@@ -26,7 +26,7 @@ logger = logging.getLogger("wpa.responder")
 MODEL_NAME = os.getenv("OLLAMA_MODEL")   # same model as classifier, change if needed
 
 _llm = ChatOllama(
-    model=MODEL_NAME,
+    model=MODEL_NAME or "qwen2.5:1.5b",
     temperature=0.4,
     base_url="http://localhost:11434",
 )
@@ -56,8 +56,8 @@ Result: "Battery is at 45%, discharging."
 Response: "Your battery is at 45 percent and discharging."
 
 Tool: open_app
-Result: "Opened notepad successfully."
-Response: "Notepad is open."
+Result: "Opened firefox successfully."
+Response: "Firefox is open."
 
 Tool: get_system_info
 Result: "CPU: 14%, RAM: 73% used, Battery: 45%"
@@ -78,8 +78,8 @@ Rules:
 """
 
 CHAT_PROMPT = """
-You are WPA, the Windows Productivity Agent,
-a friendly offline voice assistant.
+You are WPA, the Linux Productivity Agent,
+a friendly offline voice assistant running on Ubuntu.
 
 Answer the user's question or respond to their message.
 

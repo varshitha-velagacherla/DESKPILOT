@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=WPA - Linux Productivity Agent
+Comment=Offline voice assistant for Ubuntu
+Exec=/home/varshitha/Desktop/Windows-Productivity-Agent-main/start_wpa.sh --bg
+Path=/home/varshitha/Desktop/Windows-Productivity-Agent-main
+Icon=/home/varshitha/Desktop/Windows-Productivity-Agent-main/assets/tray_icon.png
+Terminal=false
+StartupNotify=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true

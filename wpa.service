@@ -1,0 +1,16 @@
+[Unit]
+Description=WPA - Linux Productivity Agent
+Documentation=file:///home/varshitha/Desktop/Windows-Productivity-Agent-main/README_UBUNTU.md
+After=network.target sound.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/varshitha/Desktop/Windows-Productivity-Agent-main
+ExecStart=/home/varshitha/Desktop/Windows-Productivity-Agent-main/.venv/bin/python -m src.wpa.main
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+[Install]
+WantedBy=default.target
