@@ -1,5 +1,5 @@
 """
-main.py  —  Linux Productivity Agent (Ubuntu port)
+main.py  —  DeskPilot (Linux Productivity Agent)
 
 Fixes from previous version:
   1. signal_handler only sets flag — never calls sys.exit() or speak()
@@ -17,11 +17,11 @@ import uuid
 import requests
 from dotenv import load_dotenv
 
-from src.wpa.voice.wakeword import WakeWordDetector
-from src.wpa.voice.stt      import record_until_silence, transcribe_audio
-from src.wpa.voice.tts      import speak
-from src.wpa.agent          import agent, AgentState
-from src.wpa.ui.tray        import start_tray, set_status, is_paused, exit_requested
+from src.deskpilot.voice.wakeword import WakeWordDetector
+from src.deskpilot.voice.stt      import record_until_silence, transcribe_audio
+from src.deskpilot.voice.tts      import speak
+from src.deskpilot.agent          import agent, AgentState
+from src.deskpilot.ui.tray        import start_tray, set_status, is_paused, exit_requested
 
 load_dotenv()
 
@@ -33,7 +33,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     handlers=[
-        logging.FileHandler("logs/wpa.log"),
+        logging.FileHandler("logs/deskpilot.log"),
         # logging.StreamHandler(sys.stdout),  # Disabled terminal output
     ]
 )
@@ -136,10 +136,10 @@ def run_agent(user_input: str, debug: bool = False) -> str:
             print(f"     output : {result.get('tool_output', '')[:120]}")
 
     if action == "confirm":
-        print(f"WPA : {response}")
-        print(f"     >>> Say 'yes' to confirm or 'no' to cancel")
+        print(f"DeskPilot : {response}")
+        print(f"           >>> Say 'yes' to confirm or 'no' to cancel")
     else:
-        print(f"WPA : {response}")
+        print(f"DeskPilot : {response}")
 
     return response
 
@@ -151,8 +151,8 @@ def run_agent(user_input: str, debug: bool = False) -> str:
 def initialize_pipeline() -> bool:
     global wake_word_detector
 
-    from src.wpa.system.platform_utils import SESSION_TYPE
-    logger.info(f"Initializing Linux Productivity Agent... session={SESSION_TYPE}")
+    from src.deskpilot.system.platform_utils import SESSION_TYPE
+    logger.info(f"Initializing DeskPilot... session={SESSION_TYPE}")
     if SESSION_TYPE == "wayland":
         logger.warning(
             "Wayland session detected. Degraded features: wmctrl/xdotool (window listing), "
@@ -307,7 +307,7 @@ def run_conversation_session() -> bool:
 
 def main():
     print("\n" + "=" * 60)
-    print("      Linux Productivity Agent (WPA)")
+    print("            DeskPilot")
     print("=" * 60)
 
     signal.signal(signal.SIGINT, signal_handler)
@@ -356,7 +356,7 @@ def main():
             time.sleep(1)
             continue
 
-    logger.info(f"WPA shut down after {session_count} sessions")
+    logger.info(f"DeskPilot shut down after {session_count} sessions")
     print("Goodbye!")
 
 

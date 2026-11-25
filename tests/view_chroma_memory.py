@@ -14,7 +14,7 @@ import json
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from src.wpa.memory.chroma_memory import (
+from src.deskpilot.memory.chroma_memory import (
     get_relevant_preferences,
     get_relevant_history,
     build_context_block,
@@ -87,7 +87,7 @@ def view_all_preferences():
         _init()
         
         # Access the global collection after init
-        from src.wpa.memory.chroma_memory import _prefs_collection as prefs
+        from src.deskpilot.memory.chroma_memory import _prefs_collection as prefs
         
         if prefs is None:
             print("\n❌ Failed to initialize ChromaDB.")
@@ -132,7 +132,7 @@ def view_all_history():
         _init()
         
         # Access the global collection after init
-        from src.wpa.memory.chroma_memory import _history_collection as history
+        from src.deskpilot.memory.chroma_memory import _history_collection as history
         
         if history is None:
             print("\n❌ Failed to initialize ChromaDB.")
@@ -191,7 +191,7 @@ def semantic_search_preferences():
         n_results = int(n_results) if n_results.isdigit() else 5
         
         _init()
-        from src.wpa.memory.chroma_memory import _prefs_collection as prefs
+        from src.deskpilot.memory.chroma_memory import _prefs_collection as prefs
         
         if prefs is None or prefs.count() == 0:
             print(f"\n❌ No preferences found.")
@@ -247,7 +247,7 @@ def semantic_search_history():
         n_results = int(n_results) if n_results.isdigit() else 5
         
         _init()
-        from src.wpa.memory.chroma_memory import _history_collection as history
+        from src.deskpilot.memory.chroma_memory import _history_collection as history
         
         if history is None or history.count() == 0:
             print(f"\n❌ No history found.")
@@ -328,7 +328,7 @@ def view_collection_stats():
     
     try:
         _init()
-        from src.wpa.memory.chroma_memory import _prefs_collection as prefs, _history_collection as history
+        from src.deskpilot.memory.chroma_memory import _prefs_collection as prefs, _history_collection as history
         
         if prefs is None or history is None:
             print("\n❌ Failed to initialize ChromaDB.")
@@ -386,7 +386,7 @@ def export_to_json():
     
     try:
         _init()
-        from src.wpa.memory.chroma_memory import _prefs_collection as prefs, _history_collection as history
+        from src.deskpilot.memory.chroma_memory import _prefs_collection as prefs, _history_collection as history
         
         if prefs is None or history is None:
             print("\n❌ Failed to initialize ChromaDB.")
@@ -466,7 +466,7 @@ def clear_memory_warning():
     if confirm == "DELETE ALL":
         try:
             _init()
-            from src.wpa.memory.chroma_memory import _prefs_collection as prefs, _history_collection as history
+            from src.deskpilot.memory.chroma_memory import _prefs_collection as prefs, _history_collection as history
             
             if prefs is None or history is None:
                 print("\n❌ Failed to initialize ChromaDB.")

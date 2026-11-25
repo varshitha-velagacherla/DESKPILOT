@@ -9,7 +9,7 @@ Also enforces confirmation rules.
 import logging
 from typing import Optional, Tuple
 
-logger = logging.getLogger("wpa.router")
+logger = logging.getLogger("deskpilot.router")
 
 # ── Tools that require user confirmation before running ───────────────────────
 RISKY_TOOLS = {

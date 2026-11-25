@@ -7,7 +7,7 @@ from langchain_core.messages import BaseMessage
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.wpa.agent import agent, AgentState
+from src.deskpilot.agent import agent, AgentState
 
 conversation_history = []
 SESSION_ID = str(uuid.uuid4())[:8]

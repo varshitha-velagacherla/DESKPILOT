@@ -1,5 +1,5 @@
 """
-smoke_test.py — Linux Smoke Test Suite for WPA
+smoke_test.py — Linux Smoke Test Suite for DeskPilot
 
 Checks: Ollama connectivity, mic input availability, TTS output, wake-word
 model load, Whisper transcription of a synthetic sample, every tool callable,
@@ -134,7 +134,7 @@ def test_whisper():
 # ══════════════════════════════════════════════════════════════════════════════
 
 def test_tools():
-    from src.wpa.agent.tools import ALL_TOOLS
+    from src.deskpilot.agent.tools import ALL_TOOLS
     names = [t.name if hasattr(t, "name") else t.__name__ for t in ALL_TOOLS]
     assert len(names) >= 10, f"Only {len(names)} tools registered"
     return f"{len(names)} tools: {names}"
@@ -145,7 +145,7 @@ def test_tools():
 # ══════════════════════════════════════════════════════════════════════════════
 
 def test_memory_sqlite():
-    from src.wpa.memory.sqlite_memory import save_interaction, get_recent_interactions
+    from src.deskpilot.memory.sqlite_memory import save_interaction, get_recent_interactions
     save_interaction(
         session_id="smoke_test",
         user_input="hello",
@@ -167,7 +167,7 @@ def test_memory_sqlite():
 
 def test_memory_chroma():
     try:
-        from src.wpa.memory.chroma_memory import save_preference, get_relevant_preferences
+        from src.deskpilot.memory.chroma_memory import save_preference, get_relevant_preferences
         save_preference("smoke test preference: dark mode")
         results_q = get_relevant_preferences("dark mode")
         assert results_q is not None, "query returned None"
@@ -181,7 +181,7 @@ def test_memory_chroma():
 # ══════════════════════════════════════════════════════════════════════════════
 
 def test_platform():
-    from src.wpa.system.platform_utils import (
+    from src.deskpilot.system.platform_utils import (
         detect_session_type, resolve_app_command, get_volume_linux
     )
     session = detect_session_type()
@@ -206,7 +206,7 @@ def test_peak_ram():
 
 def main():
     print("\n" + "=" * 60)
-    print("  WPA Linux Smoke Test")
+    print("  DeskPilot Smoke Test")
     print("=" * 60 + "\n")
 
     check("Ollama connectivity",    test_ollama)

@@ -1,0 +1,16 @@
+[Unit]
+Description=DeskPilot - Linux Productivity Agent
+Documentation=file:///home/varshitha/Desktop/DESKPILOT/README_UBUNTU.md
+After=network.target sound.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/varshitha/Desktop/DESKPILOT
+ExecStart=/home/varshitha/Desktop/DESKPILOT/.venv/bin/python -m src.deskpilot.main
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=:0
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+
+[Install]
+WantedBy=default.target

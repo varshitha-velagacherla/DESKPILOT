@@ -28,7 +28,7 @@ from .tool_executor import execute_tool
 from .response_generator import generate_response
 from ..memory import memory as mem
 
-logger = logging.getLogger("wpa.nodes")
+logger = logging.getLogger("deskpilot.nodes")
 
 _router = ToolRouter()
 

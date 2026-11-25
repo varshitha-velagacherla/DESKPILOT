@@ -40,7 +40,7 @@ from typing import List, Dict, Optional
 from pathlib import Path
 
 
-logger = logging.getLogger("wpa.memory.chroma")
+logger = logging.getLogger("deskpilot.memory.chroma")
 
 
 CHROMA_PATH        = "memory/chroma_db"

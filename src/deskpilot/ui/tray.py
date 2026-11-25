@@ -20,7 +20,7 @@ import pystray
 
 img = Path("assets/tray_icon.png")
 
-logger = logging.getLogger("wpa.tray")
+logger = logging.getLogger("deskpilot.tray")
 
 # ── Shared state ──────────────────────────────────────────────────────────────
 _status_text    = "Listening..."
@@ -79,7 +79,7 @@ def _on_open_logs(icon, item):
 
 def _on_clear_memory(icon, item):
     try:
-        db = Path("memory/wpa_memory.db")
+        db = Path("memory/deskpilot_memory.db")
         if db.exists():
             db.unlink()
             logger.info("Tray: memory cleared")

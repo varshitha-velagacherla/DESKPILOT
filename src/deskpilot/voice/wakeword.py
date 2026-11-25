@@ -96,7 +96,7 @@ class WakeWordDetector:
 
     def _tts_is_speaking(self) -> bool:
         try:
-            from src.wpa.voice.tts import get_speaking_status
+            from src.deskpilot.voice.tts import get_speaking_status
             return get_speaking_status()
         except Exception:
             return False

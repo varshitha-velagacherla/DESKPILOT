@@ -160,7 +160,7 @@ def record_until_silence(
     pre_buffer_max_frames = int(pre_buffer_max_s       * 1000 / frame_duration_ms)
 
     try:
-        from src.wpa.voice.tts import get_speaking_status as _tts_status
+        from src.deskpilot.voice.tts import get_speaking_status as _tts_status
     except ImportError:
         _tts_status = None
 

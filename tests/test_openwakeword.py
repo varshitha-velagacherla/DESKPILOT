@@ -103,7 +103,7 @@ def test_wakeword_init():
     print_header("🔧 Testing WakeWordDetector Initialization")
     
     try:
-        from src.wpa.voice.wakeword import WakeWordDetector
+        from src.deskpilot.voice.wakeword import WakeWordDetector
         
         print(f"\n📝 Creating detector with wake_word='{WAKE_WORD}'...")
         print("   (Loading OpenWakeWord model, this may take a few seconds...)\n")

@@ -16,7 +16,7 @@ from pathlib import Path
 # ── Path setup ────────────────────────────────────────────────────────────────
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from src.wpa.agent import agent, AgentState
+from src.deskpilot.agent import agent, AgentState
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(

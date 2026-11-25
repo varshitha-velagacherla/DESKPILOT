@@ -46,7 +46,7 @@ This gives:
 Architecture:
 
 
-  ![alt text](wpa_architecture.png)
+  ![alt text](deskpilot_architecture.png)
 
 ---
 
@@ -157,7 +157,7 @@ Windows Productivity Agent/
 │
 ├── src/
 
-│     -----   └── wpa/
+│     -----   └── deskpilot/
 
 │       --------------     ├── agent/
 
@@ -172,7 +172,7 @@ Windows Productivity Agent/
 │        ---------------    └── main.py
 
 
-├── start_wpa.bat
+├── start_deskpilot.bat
 
 ├── requirements.txt
 
@@ -231,13 +231,13 @@ ollama list
 
 ## Development Mode
 
-python -m src.wpa.main
+python -m src.deskpilot.main
 
 ---
 
 ## Background Mode
 
-pythonw -m src.wpa.main
+pythonw -m src.deskpilot.main
 
 ---
 
@@ -245,13 +245,13 @@ pythonw -m src.wpa.main
 
 ## By Using Startup Folder
 
-Double-click start_wpa.bat to launch WPA
+Double-click start_deskpilot.bat to launch WPA
 
 ( or )
 
 Win + R → shell:startup
 
-Place a shortcut to `start_wpa.bat` inside.
+Place a shortcut to `start_deskpilot.bat` inside.
 
 it will be automatically triggered on logging into your pc.
 

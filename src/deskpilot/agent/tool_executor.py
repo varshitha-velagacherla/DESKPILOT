@@ -6,19 +6,17 @@ Changes from Windows version:
     shutil.which()-based resolution via platform_utils.resolve_app_command()
   - Removed time.sleep(2)/is_process_running hard verification (unreliable
     for Flatpak/snap apps on Linux) — replaced with a shorter 0.5s check
-  - APP_MAP is now defined in src/wpa/system/platform_utils.py (LINUX_APP_MAP)
+  - APP_MAP is now defined in src/deskpilot/system/platform_utils.py (LINUX_APP_MAP)
   - All other logic (COMMON_SITES, tool routing, etc.) is unchanged
 """
 
 import logging
 from typing import Tuple
-import time
-import psutil
 
 from .tools import ALL_TOOLS
-from src.wpa.system.platform_utils import resolve_app_command
+from src.deskpilot.agent.tools.app_tools import launch_app
 
-logger = logging.getLogger("wpa.executor")
+logger = logging.getLogger("deskpilot.executor")
 
 COMMON_SITES = {
     # Google ecosystem
@@ -97,40 +95,20 @@ def execute_tool(tool_name: str, tool_args: dict) -> Tuple[bool, str]:
         msg = f"Tool '{tool_name}' not found. Available: {list(_tool_map.keys())}"
         return False, msg
 
-    # ── Linux app resolution ──────────────────────────────────────────────────
-    # Translate friendly app name → actual Linux executable path.
-    # resolve_app_command() checks shutil.which() and returns None if not found.
+    # ── Verified Linux app launch ─────────────────────────────────────────────
     if tool_name == "open_app":
-        app_name = tool_args.get("app_name", "").lower().strip()
-        cmd = resolve_app_command(app_name)
-        if cmd is None:
-            # Graceful failure with a helpful message (no crash)
-            msg = (
-                f"Application '{app_name}' not found on this system. "
-                f"Try installing it or use a website instead."
-            )
-            logger.warning(f"[executor] {msg}")
+        app_name = tool_args.get("app_name", "").strip()
+        try:
+            return launch_app(app_name)
+        except Exception as e:
+            msg = f"I couldn't open {app_name or 'that application'}."
+            logger.error(f"[executor] open_app failed for '{app_name}': {e}")
             return False, msg
-        tool_args["app_name"] = cmd
-        logger.info(f"[executor] resolved '{app_name}' → '{cmd}'")
 
     try:
         tool = _tool_map[tool_name]
         result = tool.invoke(tool_args)
         result_str = str(result).strip()
-
-        # Post-launch verification for open_app (shorter wait on Linux)
-        if tool_name == "open_app":
-            app_name = tool_args.get("app_name", "")
-            time.sleep(0.5)  # Linux apps launch faster; was 2s on Windows
-            if not is_process_running(app_name):
-                result_str = (
-                    "Tool executed but app did not appear. "
-                    "Check app name or installation."
-                )
-                logger.warning(f"[executor] app verification failed: {app_name}")
-                return False, result_str
-
         return True, result_str
 
     except TypeError as e:

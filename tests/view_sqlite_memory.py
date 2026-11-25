@@ -14,7 +14,7 @@ import json
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, project_root)
 
-from src.wpa.memory.sqlite_memory import (
+from src.deskpilot.memory.sqlite_memory import (
     get_recent_interactions,
     get_session_interactions,
     get_tool_usage_stats,

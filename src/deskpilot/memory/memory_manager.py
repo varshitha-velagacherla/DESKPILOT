@@ -6,7 +6,7 @@ everywhere, import MemoryManager and use one object.
 
 Usage:
 
-    from wpa.memory.memory_manager import memory
+    from deskpilot.memory.memory_manager import memory
 
     memory.save_turn(session_id, user_input, ...)
     memory.get_context(user_input)
@@ -39,7 +39,7 @@ from .sqlite_memory import (
 )
 
 
-logger = logging.getLogger("wpa.memory")
+logger = logging.getLogger("deskpilot.memory")
 
 
 # ChromaDB is optional — if not installed, semantic memory is skipped gracefully

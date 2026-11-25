@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=DeskPilot - Linux Productivity Agent
+Comment=Offline voice assistant for Ubuntu
+Exec=/home/varshitha/Desktop/DESKPILOT/start_deskpilot.sh --bg
+Path=/home/varshitha/Desktop/DESKPILOT
+Icon=/home/varshitha/Desktop/DESKPILOT/assets/tray_icon.png
+Terminal=false
+StartupNotify=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true

@@ -1,4 +1,4 @@
-# WPA — Linux Productivity Agent (Ubuntu Port)
+# DeskPilot — Linux Productivity Agent (Ubuntu Port)
 
 An offline-first voice assistant ported from Windows to Ubuntu.  
 Says a wake word → records speech → transcribes with Whisper → classifies intent via Ollama → executes tools deterministically → responds via TTS.
@@ -6,7 +6,7 @@ Says a wake word → records speech → transcribes with Whisper → classifies 
 ## Quick Start
 
 ```bash
-cd ~/Desktop/Windows-Productivity-Agent-main
+cd ~/Desktop/DESKPILOT
 
 # 1. Fix EOL apt sources (Ubuntu 23.10 is end-of-life)
 # If apt update fails, replace archive.ubuntu.com with old-releases.ubuntu.com:
@@ -38,34 +38,34 @@ cp .env.example .env   # or use the .env already provided
 # Edit .env: set OLLAMA_MODEL, WAKE_WORD, etc.
 
 # 6. Run
-./start_wpa.sh
+./start_deskpilot.sh
 ```
 
 ## Running
 
 | Mode | Command |
 |------|---------|
-| Foreground | `./start_wpa.sh` |
-| Background | `./start_wpa.sh --bg` |
-| Dev mode | `source .venv/bin/activate && python -m src.wpa.main` |
+| Foreground | `./start_deskpilot.sh` |
+| Background | `./start_deskpilot.sh --bg` |
+| Dev mode | `source .venv/bin/activate && python -m src.deskpilot.main` |
 | Smoke test | `source .venv/bin/activate && python tests/smoke_test.py` |
 
 ## Autostart at Login
 
 ### Option A: XDG Desktop Entry
 ```bash
-cp wpa.desktop ~/.config/autostart/
+cp deskpilot.desktop ~/.config/autostart/
 ```
 
 ### Option B: systemd --user unit
 ```bash
-cp wpa.service ~/.config/systemd/user/
+cp deskpilot.service ~/.config/systemd/user/
 systemctl --user daemon-reload
-systemctl --user enable wpa.service
-systemctl --user start wpa.service
+systemctl --user enable deskpilot.service
+systemctl --user start deskpilot.service
 # Check status:
-systemctl --user status wpa.service
-journalctl --user -u wpa.service -f
+systemctl --user status deskpilot.service
+journalctl --user -u deskpilot.service -f
 ```
 
 ## System Tray
@@ -121,7 +121,7 @@ echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 | `apt update` fails | Fix EOL sources (see Quick Start step 1) |
 | No sound / mic | Check `pactl list sources short` or `wpctl status` |
 | Ollama not reachable | Run `ollama serve` in a terminal |
-| TTS too fast | Lower rate in `src/wpa/voice/tts.py` (default: 160 wpm) |
+| TTS too fast | Lower rate in `src/deskpilot/voice/tts.py` (default: 160 wpm) |
 | Wake word not detecting | Lower `WAKE_WORD_THRESHOLD` in `.env` (default: 0.05) |
 | High RAM usage | Switch to `tiny.en` Whisper and `qwen2.5:1.5b` Ollama |
 | Tray icon missing | Install AppIndicator extension or switch to Xorg |
@@ -146,15 +146,15 @@ All processing offline after initial model downloads.
 
 | File | Change |
 |------|--------|
-| `src/wpa/system/platform_utils.py` | **NEW** — Linux abstraction layer |
-| `src/wpa/agent/tools/system_tools.py` | `pyautogui` → `wpctl`/`pactl`/`amixer`; `pyperclip` → `xclip`/`wl-clipboard` |
-| `src/wpa/agent/tools/app_tools.py` | Windows `.exe` map → Linux `shutil.which()` map |
-| `src/wpa/agent/tool_executor.py` | Windows `C:\` APP_MAP → Linux `resolve_app_command()` |
-| `src/wpa/agent/tools/screen_tools.py` | Hardcoded `C:\Users\…` → `~/Pictures/Screenshots` |
-| `src/wpa/voice/tts.py` | SAPI5 Zira → espeak-ng |
-| `src/wpa/voice/stt.py` | `small` → `base.en`, forced CPU, `beam_size=1` |
-| `src/wpa/voice/wakeword.py` | Added `inference_framework="onnx"` |
-| `src/wpa/ui/tray.py` | `explorer` → `xdg-open`; title renamed |
-| `src/wpa/main.py` | Default model/wake word; Wayland log; title renamed |
-| `src/wpa/agent/intent_classifier.py` | "Windows" → "Linux" in prompt |
-| `src/wpa/agent/response_generator.py` | Model fallback; "Windows" → "Linux" in prompt |
+| `src/deskpilot/system/platform_utils.py` | **NEW** — Linux abstraction layer |
+| `src/deskpilot/agent/tools/system_tools.py` | `pyautogui` → `wpctl`/`pactl`/`amixer`; `pyperclip` → `xclip`/`wl-clipboard` |
+| `src/deskpilot/agent/tools/app_tools.py` | Windows `.exe` map → Linux `shutil.which()` map |
+| `src/deskpilot/agent/tool_executor.py` | Windows `C:\` APP_MAP → Linux `resolve_app_command()` |
+| `src/deskpilot/agent/tools/screen_tools.py` | Hardcoded `C:\Users\…` → `~/Pictures/Screenshots` |
+| `src/deskpilot/voice/tts.py` | SAPI5 Zira → espeak-ng |
+| `src/deskpilot/voice/stt.py` | `small` → `base.en`, forced CPU, `beam_size=1` |
+| `src/deskpilot/voice/wakeword.py` | Added `inference_framework="onnx"` |
+| `src/deskpilot/ui/tray.py` | `explorer` → `xdg-open`; title renamed |
+| `src/deskpilot/main.py` | Default model/wake word; Wayland log; title renamed |
+| `src/deskpilot/agent/intent_classifier.py` | "Windows" → "Linux" in prompt |
+| `src/deskpilot/agent/response_generator.py` | Model fallback; "Windows" → "Linux" in prompt |

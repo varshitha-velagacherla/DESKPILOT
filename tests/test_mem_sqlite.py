@@ -3,7 +3,7 @@ sys.path.insert(0, 'src')
 from pathlib import Path
 Path('memory').mkdir(exist_ok=True)
 
-from wpa.memory.sqlite_memory import (
+from src.deskpilot.memory.sqlite_memory import (
     save_interaction, get_recent_interactions,
     get_tool_usage_stats, get_memory_summary,
     save_preference, get_preference, search_interactions

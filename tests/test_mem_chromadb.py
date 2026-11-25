@@ -4,7 +4,7 @@ sys.path.insert(0, 'src')
 from pathlib import Path
 Path('memory').mkdir(exist_ok=True)
 
-from wpa.memory.chroma_memory import (
+from src.deskpilot.memory.chroma_memory import (
     save_preference, get_relevant_preferences,
     save_interaction_summary, get_relevant_history,
     build_context_block, count_stored

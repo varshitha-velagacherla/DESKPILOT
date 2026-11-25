@@ -21,7 +21,7 @@ from langchain_core.messages import (
     BaseMessage,
 )
 
-logger = logging.getLogger("wpa.responder")
+logger = logging.getLogger("deskpilot.responder")
 
 MODEL_NAME = os.getenv("OLLAMA_MODEL")   # same model as classifier, change if needed
 
@@ -29,6 +29,7 @@ _llm = ChatOllama(
     model=MODEL_NAME or "qwen2.5:1.5b",
     temperature=0.4,
     base_url="http://localhost:11434",
+    num_predict=100,
 )
 
 # ── Prompts for each response type ───────────────────────────────────────────
@@ -84,7 +85,8 @@ a friendly offline voice assistant running on Ubuntu.
 Answer the user's question or respond to their message.
 
 Rules:
-- Maximum 2 sentences
+- Answer in at most 2 short sentences
+- Keep replies concise and direct for voice output
 - No markdown
 - No bullet points
 - Conversational and natural
@@ -176,6 +178,8 @@ def generate_response(
     try:
 
         if response_type == "tool_success":
+            if tool_name == "get_current_time" and tool_output:
+                return tool_output.strip()
 
             messages = [
                 SystemMessage(content=TOOL_SUCCESS_PROMPT),
@@ -191,6 +195,8 @@ def generate_response(
             ]
 
         elif response_type == "tool_failure":
+            if tool_name == "open_app" and tool_output and tool_output.strip().startswith("I couldn't open"):
+                return tool_output.strip()
 
             messages = [
                 SystemMessage(content=TOOL_FAILURE_PROMPT),

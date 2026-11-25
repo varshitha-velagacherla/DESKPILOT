@@ -16,13 +16,13 @@ import datetime
 import logging
 from langchain_core.tools import tool
 
-from src.wpa.system.platform_utils import (
+from src.deskpilot.system.platform_utils import (
     set_volume_linux,
     get_clipboard_linux,
     set_clipboard_linux,
 )
 
-logger = logging.getLogger("wpa.tools.system")
+logger = logging.getLogger("deskpilot.tools.system")
 
 
 @tool
@@ -94,7 +94,15 @@ def set_clipboard(text: str) -> str:
 
 
 @tool
-def get_current_time() -> str:
-    """Get the current date and time."""
+def get_current_time(mode: str = "both") -> str:
+    """Get the current local time and/or date in a short spoken sentence."""
     now = datetime.datetime.now()
-    return now.strftime("It is %A, %B %d %Y, %I:%M %p")
+    time_str = now.strftime("%I:%M %p").lstrip("0")
+    date_str = f"{now.strftime('%A, %B')} {now.day}, {now.year}"
+
+    mode_norm = (mode or "both").strip().lower()
+    if mode_norm == "time":
+        return f"It's {time_str}."
+    if mode_norm == "date":
+        return f"Today is {date_str}."
+    return f"It's {time_str} on {date_str}."

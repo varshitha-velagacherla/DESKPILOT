@@ -12,7 +12,7 @@ import re
 import logging
 from langchain_ollama import ChatOllama
 from langchain_core.messages import SystemMessage, HumanMessage
-logger = logging.getLogger("wpa.intent")
+logger = logging.getLogger("deskpilot.intent")
 
 from dotenv import load_dotenv
 load_dotenv()  # take environment variables from .env file
@@ -156,12 +156,78 @@ Examples:
 "open github" -> open_url(url="https://github.com")
 """
 
+# ── Deterministic pre-LLM regex rules (time / date) ───────────────────────────
+_WAKE_PREFIX_RE = re.compile(r"^(?:alexa|hey\s+deskpilot|deskpilot)[,\s]+", re.IGNORECASE)
+
+_TIME_QUERY_PATTERNS = [
+    re.compile(r"^(?:what(?:'s| is)\s+(?:the\s+)?(?:current\s+)?time(?:\s+(?:right\s+now|now|today|please))?)$"),
+    re.compile(r"^(?:what\s+time\s+is\s+it(?:\s+(?:right\s+now|now|please))?)$"),
+    re.compile(r"^(?:(?:please\s+)?tell\s+me\s+(?:the\s+)?(?:current\s+)?time)$"),
+    re.compile(r"^(?:(?:what(?:'s| is)\s+)?current\s+time(?:\s+please)?)$"),
+    re.compile(r"^(?:do\s+you\s+(?:know|have)\s+the\s+time)$"),
+]
+
+_DATE_QUERY_PATTERNS = [
+    re.compile(r"^(?:what(?:'s| is)\s+(?:the\s+|today'?s\s+)?date(?:\s+(?:today|please))?)$"),
+    re.compile(r"^(?:today'?s\s+date(?:\s+please)?)$"),
+    re.compile(r"^(?:what\s+day\s+(?:of\s+the\s+week\s+)?is\s+(?:it|today)(?:\s+(?:today|please))?)$"),
+    re.compile(r"^(?:(?:please\s+)?tell\s+me\s+(?:the\s+|today'?s\s+)?date)$"),
+    re.compile(r"^(?:current\s+date(?:\s+please)?)$"),
+]
+
+
+def _normalize_for_rules(text: str) -> str:
+    """Normalize user text for deterministic regex intent matching."""
+    cleaned = text.strip().replace("’", "'").replace("‘", "'")
+    cleaned = _WAKE_PREFIX_RE.sub("", cleaned)
+    cleaned = re.sub(r"[?!.,;:]+$", "", cleaned).strip().lower()
+    cleaned = re.sub(r"\s+", " ", cleaned)
+    return cleaned
+
+
+def match_deterministic_intent(user_input: str) -> dict | None:
+    """Match unambiguous time/date queries before calling the LLM classifier."""
+    norm = _normalize_for_rules(user_input)
+    if not norm:
+        return None
+
+    for pat in _TIME_QUERY_PATTERNS:
+        if pat.match(norm):
+            return {
+                "intent": "tool_use",
+                "tool_name": "get_current_time",
+                "tool_args": {"mode": "time"},
+                "confidence": 1.0,
+                "raw_query": user_input,
+            }
+
+    for pat in _DATE_QUERY_PATTERNS:
+        if pat.match(norm):
+            return {
+                "intent": "tool_use",
+                "tool_name": "get_current_time",
+                "tool_args": {"mode": "date"},
+                "confidence": 1.0,
+                "raw_query": user_input,
+            }
+
+    return None
+
+
 def classify_intent(user_input: str, memory_context: str = "", conversation_history: list = None) -> dict:
     """
     Classify user input into a structured intent dict.
     Returns a safe default if LLM fails or returns invalid JSON.
     This function NEVER raises — always returns a valid dict.
     """
+    deterministic = match_deterministic_intent(user_input)
+    if deterministic is not None:
+        logger.info(
+            f"[classifier] deterministic rule matched: tool={deterministic['tool_name']} "
+            f"args={deterministic['tool_args']}"
+        )
+        return deterministic
+
     # logger.info(f"[classifier] input: '{user_input}' | history_len={len(conversation_history) if conversation_history else 0}")
     prompt = CLASSIFIER_PROMPT.replace(
         "{tool_catalogue}",

@@ -15,12 +15,12 @@ from pathlib import Path
 from typing import List, Dict, Optional
 
 
-logger = logging.getLogger("wpa.memory.sqlite")
+logger = logging.getLogger("deskpilot.memory.sqlite")
 
 
 # ── Database location ─────────────────────────────────────────────────────────
 
-DB_PATH = Path("memory/wpa_memory.db")
+DB_PATH = Path("memory/deskpilot_memory.db")
 
 
 def _get_conn() -> sqlite3.Connection:

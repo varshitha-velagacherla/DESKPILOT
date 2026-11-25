@@ -1,7 +1,7 @@
 """
 Test conversation context handling
 """
-from src.wpa.agent import agent, AgentState
+from src.deskpilot.agent import agent, AgentState
 
 conversation_memory = []
 pending_tool = {}
