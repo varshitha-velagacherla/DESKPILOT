@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-ChromaDB Memory Viewer - Displays all content stored in WPA's ChromaDB semantic memory.
+ChromaDB Memory Viewer - Displays all content stored in DeskPilot's ChromaDB semantic memory.
 Run: python tests/view_chroma_memory.py
 """
 
@@ -75,7 +75,7 @@ def check_database_exists():
             return False
     else:
         print(f"Status: ❌ NOT FOUND")
-        print("\nThe database will be created when you first run WPA.")
+        print("\nThe database will be created when you first run DeskPilot.")
         return False
 
 
@@ -148,7 +148,7 @@ def view_all_history():
         
         if not docs:
             print("\n❌ No interaction history stored.")
-            print("   Use WPA to perform actions and build up history!")
+            print("   Use DeskPilot to perform actions and build up history!")
             return
         
         print(f"\nTotal interactions: {len(docs)}\n")
@@ -513,7 +513,7 @@ def main():
     
     # Check if database exists
     if not check_database_exists():
-        print("\n💡 Tip: Run WPA first to create the database and start building memory.")
+        print("\n💡 Tip: Run DeskPilot first to create the database and start building memory.")
         response = input("\nContinue anyway? (y/n): ").strip().lower()
         if response != 'y':
             return

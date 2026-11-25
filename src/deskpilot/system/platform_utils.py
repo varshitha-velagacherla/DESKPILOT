@@ -17,6 +17,7 @@ import logging
 import os
 import shutil
 import subprocess
+import time
 from pathlib import Path
 from typing import Any, Mapping, Optional
 
@@ -124,6 +125,7 @@ def set_volume_linux(level: int) -> str:
                 ["wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@", f"{fraction:.2f}"],
                 check=True, capture_output=True
             )
+            time.sleep(0.15)
             return f"Volume set to {level}%."
         except subprocess.CalledProcessError as e:
             logger.warning(f"wpctl failed: {e}")
@@ -217,29 +219,47 @@ def set_clipboard_linux(text: str) -> str:
 
     if SESSION_TYPE == "wayland" and shutil.which("wl-copy"):
         try:
-            proc = subprocess.run(["wl-copy"], input=encoded, check=True, capture_output=True)
+            subprocess.run(
+                ["wl-copy"],
+                input=encoded,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
+            )
+            time.sleep(0.15)
             return f"Copied to clipboard: {text[:100]}"
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             logger.warning(f"wl-copy failed: {e}")
 
     if shutil.which("xclip"):
         try:
             subprocess.run(
                 ["xclip", "-selection", "clipboard"],
-                input=encoded, check=True, capture_output=True
+                input=encoded,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
             )
+            time.sleep(0.15)
             return f"Copied to clipboard: {text[:100]}"
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             logger.warning(f"xclip failed: {e}")
 
     if shutil.which("xsel"):
         try:
             subprocess.run(
                 ["xsel", "--clipboard", "--input"],
-                input=encoded, check=True, capture_output=True
+                input=encoded,
+                check=True,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                timeout=5,
             )
+            time.sleep(0.15)
             return f"Copied to clipboard: {text[:100]}"
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             logger.warning(f"xsel failed: {e}")
 
     return "Could not write to clipboard: no clipboard tool found (xclip/xsel/wl-copy)."

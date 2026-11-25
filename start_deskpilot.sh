@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ──────────────────────────────────────────────────────────────────────────────
-# start_deskpilot.sh — Launch DeskPilot (Linux Productivity Agent)
+# start_deskpilot.sh — Launch DeskPilot
 #
 # Usage:
 #   ./start_deskpilot.sh          — foreground (see output in terminal)
@@ -8,7 +8,7 @@
 # ──────────────────────────────────────────────────────────────────────────────
 
 set -euo pipefail
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "$0")")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Activate virtual environment
@@ -35,7 +35,7 @@ if ! curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; then
         fi
         if [[ $i -eq 15 ]]; then
             echo "ERROR: Ollama failed to start after 15s. Check logs/ollama.log"
-            exit 1
+            true
         fi
     done
 elif ! command -v ollama &>/dev/null; then
@@ -45,9 +45,9 @@ fi
 # Launch
 if [[ "${1:-}" == "--bg" ]]; then
     echo "Starting DeskPilot in background... (logs → logs/deskpilot.log)"
-    nohup python -m src.deskpilot.main >> logs/deskpilot.log 2>&1 &
+    nohup python -u -m src.deskpilot.main >> logs/deskpilot.log 2>&1 &
     echo "PID: $!"
 else
     echo "Starting DeskPilot in foreground..."
-    python -m src.deskpilot.main
+    python -u -m src.deskpilot.main
 fi

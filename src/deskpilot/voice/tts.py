@@ -119,4 +119,4 @@ def speak(text: str, blocking: bool = True, audio_buffer_delay: float = 0.5):
 
 
 if __name__ == "__main__":
-    speak("Hello! I am the Linux Productivity Agent, running on Ubuntu.")
+    speak("Hello! I am DeskPilot, running on Ubuntu.")

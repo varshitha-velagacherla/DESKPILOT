@@ -736,3 +736,21 @@ def get_memory_summary() -> str:
         )
 
         return ""
+
+
+def clear_all_memory() -> bool:
+    """Delete all stored interactions and preferences from SQLite."""
+    conn = None
+    try:
+        conn = _get_conn()
+        conn.execute("DELETE FROM interactions")
+        conn.execute("DELETE FROM preferences")
+        conn.commit()
+        logger.info("[sqlite] cleared all interactions and preferences")
+        return True
+    except Exception as e:
+        logger.error(f"[sqlite] clear_all_memory failed: {e}")
+        return False
+    finally:
+        if conn:
+            conn.close()

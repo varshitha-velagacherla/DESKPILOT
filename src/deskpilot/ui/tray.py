@@ -16,7 +16,70 @@ import shutil
 import logging
 from pathlib import Path
 from PIL import Image, ImageDraw
-import pystray
+import os
+import logging
+logger = logging.getLogger(__name__)
+
+# Determine if a graphical display is available
+_DISPLAY = os.getenv('DISPLAY')
+if not _DISPLAY:
+    logger.warning('No DISPLAY environment variable – running in headless mode. Tray functionality will be disabled.')
+    # Define dummy implementations that safely no‑op
+    def start_tray(on_exit_callback=None):
+        logger.info('start_tray called in headless mode – no tray icon created.')
+        return None
+    def set_status(status: str):
+        logger.debug(f'Set tray status (headless): {status}')
+    def is_paused() -> bool:
+        return False
+    def exit_requested() -> bool:
+        return False
+    def _on_clear_memory(icon, item):
+        logger.info('Clear memory called in headless mode – no action.')
+else:
+    # Existing implementation – keep unchanged
+    import pystray
+    from pystray import MenuItem as item
+    from src.deskpilot.system import platform_utils
+    from src.deskpilot.memory.sqlite_memory import clear_all as clear_sqlite
+    from src.deskpilot.memory.chroma_memory import clear_all as clear_chroma
+    from src.deskpilot.ui import resources
+    
+    ICON = pystray.Icon('DeskPilot', resources.ICON, menu=pystray.Menu(
+        item('Pause', lambda icon, _: icon.visible and set_status('Paused')),
+        item('Resume', lambda icon, _: not icon.visible and set_status('Running')),
+        item('Clear Memory', _on_clear_memory),
+        item('Exit', lambda icon, _: icon.stop()),
+    ))
+    
+    def start_tray(on_exit_callback=None):
+        def _on_exit(icon, item):
+            if on_exit_callback:
+                on_exit_callback()
+            icon.stop()
+        ICON.menu = pystray.Menu(
+            item('Pause', lambda icon, _: set_status('Paused')),
+            item('Resume', lambda icon, _: set_status('Running')),
+            item('Clear Memory', _on_clear_memory),
+            item('Exit', _on_exit),
+        )
+        ICON.run()
+    
+    def set_status(status: str):
+        ICON.title = f'DeskPilot – {status}'
+        logger.info(f'Tray status set to {status}')
+    
+    def is_paused() -> bool:
+        return ICON.title.endswith('Paused')
+    
+    def exit_requested() -> bool:
+        return not ICON.visible
+    
+    def _on_clear_memory(icon, item):
+        clear_sqlite()
+        clear_chroma()
+        logger.info('Memory cleared via tray action')
+
 
 img = Path("assets/tray_icon.png")
 
@@ -52,7 +115,7 @@ def _get_icon() -> Image.Image:
         logger.warning(f"Tray icon load failed: {e}")
         image = Image.new("RGB", (64, 64), color=(30, 30, 30))
         draw  = ImageDraw.Draw(image)
-        draw.text((18, 18), "W", fill="white")
+        draw.text((18, 18), "D", fill="white")
         return image
 
 
@@ -63,7 +126,7 @@ def _on_pause_resume(icon, item):
     _is_paused = not _is_paused
     label      = "Paused" if _is_paused else "Listening..."
     set_status(label)
-    icon.title = f"WPA — {label}"
+    icon.title = f"DeskPilot — {label}"
     logger.info(f"Tray: {'paused' if _is_paused else 'resumed'}")
 
 
@@ -79,12 +142,14 @@ def _on_open_logs(icon, item):
 
 def _on_clear_memory(icon, item):
     try:
-        db = Path("memory/deskpilot_memory.db")
-        if db.exists():
-            db.unlink()
-            logger.info("Tray: memory cleared")
+        from src.deskpilot.memory import memory as mem
+        ok = mem.clear_all()
+        if ok:
+            logger.info("Tray: memory cleared (SQLite + ChromaDB)")
+        else:
+            logger.warning("Tray: memory partially cleared")
         set_status("Memory cleared")
-        icon.title = "WPA — Memory cleared"
+        icon.title = "DeskPilot — Memory cleared"
     except Exception as e:
         logger.error(f"Tray: clear memory failed: {e}")
 
@@ -102,7 +167,7 @@ def _on_exit(icon, item):
 def _build_menu(icon):
     pause_label = "Resume" if _is_paused else "Pause"
     return pystray.Menu(
-        pystray.MenuItem(f"WPA  —  {_status_text}", None, enabled=False),
+        pystray.MenuItem(f"DeskPilot  —  {_status_text}", None, enabled=False),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(pause_label,    _on_pause_resume),
         pystray.MenuItem("Open Logs",    _on_open_logs),
@@ -130,9 +195,9 @@ def start_tray(on_exit_callback=None) -> threading.Thread:
 
     def _run():
         icon = pystray.Icon(
-            name  = "WPA",
+            name  = "DeskPilot",
             icon  = _get_icon(),
-            title = "WPA — Linux Productivity Agent",
+            title = "DeskPilot",
             menu  = pystray.Menu(lambda: _build_menu(icon))
         )
         logger.info("Tray icon started")

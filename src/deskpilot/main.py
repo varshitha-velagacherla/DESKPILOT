@@ -1,5 +1,5 @@
 """
-main.py  —  DeskPilot (Linux Productivity Agent)
+main.py  —  DeskPilot
 
 Fixes from previous version:
   1. signal_handler only sets flag — never calls sys.exit() or speak()
@@ -16,12 +16,6 @@ import os
 import uuid
 import requests
 from dotenv import load_dotenv
-
-from src.deskpilot.voice.wakeword import WakeWordDetector
-from src.deskpilot.voice.stt      import record_until_silence, transcribe_audio
-from src.deskpilot.voice.tts      import speak
-from src.deskpilot.agent          import agent, AgentState
-from src.deskpilot.ui.tray        import start_tray, set_status, is_paused, exit_requested
 
 load_dotenv()
 
@@ -40,6 +34,27 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+logger.info("DeskPilot process started")
+
+from src.deskpilot.voice.wakeword import WakeWordDetector
+from src.deskpilot.voice.stt      import record_until_silence, transcribe_audio
+from src.deskpilot.voice.tts      import speak
+from src.deskpilot.agent          import agent, AgentState
+try:
+    from src.deskpilot.ui.tray import start_tray, set_status, is_paused, exit_requested
+except Exception as e:
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.warning(f'Failed to import tray module: {e}. Tray functions will be no‑ops.')
+    def start_tray(on_exit_callback=None):
+        logger.info('start_tray called – tray disabled.')
+    def set_status(status: str):
+        logger.debug(f'Set status (tray disabled): {status}')
+    def is_paused() -> bool:
+        return False
+    def exit_requested() -> bool:
+        return False
+
 
 # ─── Config ───────────────────────────────────────────────────────────────────
 OLLAMA_API_URL           = os.getenv("OLLAMA_API_URL",           "http://localhost:11434")
@@ -208,7 +223,7 @@ def listen_for_wake_word() -> bool:
     detected = wake_word_detector.listen(timeout=WAKE_WORD_TIMEOUT)
     if not detected:
         return False
-    # logger.info("Wake word detected!")
+    logger.info(f"Wake word '{WAKE_WORD}' detected!")
     speak("Yes? How can I help you?")
     return True
 
@@ -249,7 +264,8 @@ def run_conversation_session() -> bool:
         try:
             # Record
             set_status("Listening to you...")
-            # logger.info("Recording speech...")
+            logger.info("Recording speech...")
+            t_turn0 = time.time()
             audio = record_until_silence(
                 speech_start_timeout_s = 5,
                 silence_threshold_ms   = 2000,
@@ -263,13 +279,15 @@ def run_conversation_session() -> bool:
 
             # Transcribe
             set_status("Transcribing...")
+            t_stt0 = time.time()
             text = transcribe_audio(audio)
+            dt_stt = time.time() - t_stt0
 
             if not text or not text.strip():
                 speak("I am listening.")
                 continue
 
-            # logger.info(f"Transcript: '{text}'")
+            logger.info(f"Transcript ({dt_stt:.2f}s): '{text}'")
             last_activity = time.time()
 
             # Stop phrase
@@ -280,10 +298,15 @@ def run_conversation_session() -> bool:
 
             # Agent
             set_status("Thinking...")
+            t_agent0 = time.time()
             response = run_agent(text)
+            dt_agent = time.time() - t_agent0
+            logger.info(f"Agent reply ({dt_agent:.2f}s): '{response}'")
 
             set_status("Speaking...")
+            logger.info(f"TTS speaking (wake/turn->reply={time.time()-t_turn0:.2f}s): '{response}'")
             speak(response)
+            logger.info("TTS finished")
             time.sleep(AUDIO_BUFFER_CLEAR_DELAY)
 
             last_activity = time.time()

@@ -22,7 +22,7 @@ save_interaction('test_session', 'what time is it',
                  success=True, response='It is 3:41 PM.')
 
 save_interaction('test_session', 'hello',
-                 intent='chat', response='Hello! I am WPA.')
+                 intent='chat', response='Hello! I am DeskPilot.')
 
 save_preference('preferred_volume', '40')
 save_preference('preferred_browser', 'chrome')

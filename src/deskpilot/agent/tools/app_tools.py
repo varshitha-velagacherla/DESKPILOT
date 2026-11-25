@@ -535,25 +535,37 @@ def open_app(app_name: str) -> str:
 def close_app(app_name: str) -> str:
     """Close a running application by name. Example: close firefox, close chrome."""
     key = app_name.lower().strip()
-    # Normalize common aliases
     aliases = {
         "chrome": ["chrome", "google-chrome", "chromium"],
         "vscode": ["code", "code-oss"],
         "vs code": ["code", "code-oss"],
-        "firefox": ["firefox"],
-        "terminal": ["gnome-terminal", "konsole", "xterm"],
+        "firefox": ["firefox", "firefox-bin"],
+        "terminal": ["gnome-terminal", "gnome-terminal-server", "konsole", "xterm"],
+        "calculator": ["gnome-calculator", "kcalc", "qalculate"],
+        "files": ["nautilus", "nemo", "thunar"],
+        "file explorer": ["nautilus", "nemo", "thunar", "dolphin"],
     }
     names_to_kill = aliases.get(key, [key])
+    excluded_pids = _ancestor_pids()
 
     killed = []
-    for proc in psutil.process_iter(["name", "pid"]):
-        pname = (proc.info.get("name") or "").lower()
-        if any(n in pname or pname in n for n in names_to_kill):
-            try:
+    for proc in psutil.process_iter(["name", "exe", "cmdline", "pid"]):
+        try:
+            pid = proc.info.get("pid")
+            if pid in excluded_pids:
+                continue
+            pname = proc.info.get("name") or ""
+            pexe = proc.info.get("exe") or ""
+            pcmdline = proc.info.get("cmdline") or []
+            cmd_joined = " ".join(pcmdline).lower()
+            if any(tok in cmd_joined for tok in _TEST_RUNNER_TOKENS):
+                continue
+            haystack = " ".join([pname, pexe, cmd_joined]).lower()
+            if any(n in pname.lower() or n in os.path.basename(pexe).lower() or f"/{n}" in haystack for n in names_to_kill):
                 proc.terminate()
-                killed.append(proc.info["name"])
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
-                pass
+                killed.append(pname or key)
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            pass
 
     if killed:
         return f"Closed: {', '.join(set(killed))}"

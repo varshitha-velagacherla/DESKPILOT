@@ -36,6 +36,8 @@ from .sqlite_memory import (
 
     get_memory_summary,
 
+    clear_all_memory as sqlite_clear_all,
+
 )
 
 
@@ -61,6 +63,8 @@ try:
         get_all_preferences as chroma_get_all_prefs,
 
         count_stored,
+
+        clear_all_memory as chroma_clear_all,
 
     )
 
@@ -351,6 +355,12 @@ class MemoryManager:
 
 
         return stats
+
+    def clear_all(self) -> bool:
+        """Clear both SQLite and ChromaDB memory stores."""
+        sqlite_ok = sqlite_clear_all()
+        chroma_ok = chroma_clear_all() if CHROMA_AVAILABLE else True
+        return sqlite_ok and chroma_ok
 
 
 # ── Singleton — import this everywhere ───────────────────────────────────────

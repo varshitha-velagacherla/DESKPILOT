@@ -1,305 +1,227 @@
-# Windows Productivity Agent (WPA)
+# DeskPilot
 
-An offline-first AI-powered Windows desktop assistant with:
+An offline, voice-controlled desktop assistant for Ubuntu with:
 
-- Wake word detection
-- Voice interaction
-- Local LLM reasoning
-- Tool execution
-- Memory system
-- System tray integration
-- Background startup support
-- Fully local execution using Ollama
+- Wake word detection (`alexa` via openwakeword/ONNX)
+- Offline speech-to-text (Faster Whisper)
+- Text-to-speech responses (`pyttsx3` / `espeak-ng`)
+- Local LLM intent classification & conversation (Ollama)
+- Deterministic Python routing & tool execution
+- Episodic (SQLite) and semantic (ChromaDB) memory
+- System tray integration (`pystray` / AppIndicator)
+- Background startup and autostart support (`deskpilot.desktop`, `deskpilot.service`)
 
 ---
 
-# Features
+## Features
 
-## Voice Assistant
+### Voice Assistant
 
 - Wake word activation (`alexa`)
-- Speech-to-text using Faster Whisper
-- Text-to-speech responses
+- Speech-to-text using Faster Whisper (`base.en`, CPU `int8`)
+- Text-to-speech responses via `espeak-ng`
 - Continuous conversation mode
 - Silence detection + timeout handling
 
----
-
-## Hybrid Agent Architecture
-
-The agent uses:
+### Hybrid Agent Architecture
 
 - LLM for intent classification
 - Deterministic Python routing
 - Deterministic tool execution
 - LLM for natural conversation
 
-This gives:
+Architecture diagram:
 
-- Better reliability
-- Lower hallucinations
-- Faster execution
-- Safer automation
+![DeskPilot Architecture](deskpilot_architecture.png)
 
----
-
-Architecture:
-
-
-  ![alt text](deskpilot_architecture.png)
-
----
-
-## Tool System
+### Tool System
 
 Supports:
 
-- Open applications
+- Open and close applications
 - Open websites
-- Battery status
-- Volume control
-- Clipboard actions
+- Battery and system status
+- Volume control (`wpctl` / `pactl` / `amixer`)
+- Clipboard read/write (`xclip` / `wl-clipboard`)
 - File operations
+- Screenshots (`~/Pictures/Screenshots`)
 - Web search
-- System utilities
-
 
 ---
 
+## Memory System
 
-# Memory System
+### SQLite Episodic Memory
 
-## SQLite Episodic Memory
+Stores conversations, tool usage, responses, and preferences in `memory/deskpilot_memory.db`.
 
-Stores:
+### ChromaDB Semantic Memory
 
-- Conversations
-- Tool usage
-- Responses
-- Preferences
-
-
----
-
-## ChromaDB Semantic Memory
-
-Stores:
-
-- User preferences
-- Interaction summaries
-- Semantic embeddings
-
-Uses:
-
-- ChromaDB
-- sentence-transformers
-- all-MiniLM-L6-v2
+Stores user preferences and interaction summaries with local embeddings (`sentence-transformers` / `all-MiniLM-L6-v2`) in `memory/chroma_db/`.
 
 Examples:
 
-Remember that I prefer dark mode
-Remember volume at 40 percent
+- `Remember that I prefer dark mode`
+- `Remember volume at 40 percent`
 
 ---
 
-# Tech Stack
+## Tech Stack
 
-## AI
-
-- Ollama
-- Qwen2.5
-- Faster Whisper
-- Sentence Transformers
-
-## Frameworks
-
-- LangGraph
-- LangChain
-- ChromaDB
-
-## Desktop
-
-- pystray
-- pyaudio
-- psutil
-- sounddevice
-- soundfile
-- openwakeword
-- silero-vad
-- pyttsx3
-- pyperclip
-- Pillow
-- pygetwindow
-- ddgs
-- pycaw
-- comtypes
-- pyautogui
-
-
+- **AI**: Ollama (`qwen2.5:1.5b` / `qwen2.5:3b`), Faster Whisper, Sentence Transformers, Silero VAD, openwakeword
+- **Frameworks**: LangGraph, LangChain, ChromaDB
+- **Ubuntu Desktop**: `pystray`, `pyaudio`, `sounddevice`, `soundfile`, `pyttsx3` (`espeak-ng`), `psutil`, `mss`, `pyperclip` (`xclip` / `wl-clipboard`), `wmctrl`, `xdotool`, `ddgs`, `Pillow`
 
 ---
 
-# Project Structure
+## Project Structure
 
-Windows Productivity Agent/
-
-
+```text
+/home/<user>/Desktop/DESKPILOT/
 ├── assets/
-
+│   └── tray_icon.png
 ├── logs/
-
 ├── memory/
-
-├── notebooks/
-
-├── tests/
-
-│
 ├── src/
-
-│     -----   └── deskpilot/
-
-│       --------------     ├── agent/
-
-│        --------------    ├── memory/
-
-│          --------------  ├── tools/
-
-│         --------------   ├── voice/
-
-│          ---------------  ├── system/
-
-│        ---------------    └── main.py
-
-
-├── start_deskpilot.bat
-
-├── requirements.txt
-
+│   └── deskpilot/
+│       ├── agent/
+│       ├── memory/
+│       ├── system/
+│       ├── ui/
+│       ├── utils/
+│       ├── voice/
+│       └── main.py
+├── tests/
+├── deskpilot.desktop
+├── deskpilot.service
+├── deskpilot_architecture.png
+├── requirements_linux.txt
+├── start_deskpilot.sh
 └── README.md
+```
 
 ---
 
-# Installation
+## Installation (Ubuntu)
 
-## 1. Clone Project
+### 1. Navigate to the Project
 
-git clone <your_repo_url>
-cd "Windows Productivity Agent"
+```bash
+cd /home/<user>/Desktop/DESKPILOT
+```
 
----
+### 2. Install System Dependencies
 
-## 2. Create Virtual Environment
+```bash
+sudo apt update
+sudo apt install -y python3-venv python3-dev python3.11-venv python3.11-dev \
+  build-essential portaudio19-dev libportaudio2 libsndfile1 ffmpeg espeak-ng \
+  xclip xsel wl-clipboard wmctrl xdotool pulseaudio-utils playerctl \
+  gir1.2-appindicator3-0.1 python3-gi libgirepository1.0-dev libcairo2-dev
+```
 
-python -m venv .venv
+### 3. Create Virtual Environment & Install Packages
 
-Activate:
+```bash
+python3.11 -m venv .venv --system-site-packages
+source .venv/bin/activate
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install -r requirements_linux.txt
+```
 
-### Windows
+### 4. Ollama Setup
 
-.venv\Scripts\activate
+Install Ollama from [https://ollama.com](https://ollama.com) (or `curl -fsSL https://ollama.com/install.sh | sh`), then pull the models:
 
----
-
-## 3. Install Requirements
-
-pip install -r requirements.txt
-
----
-
-# Ollama Setup
-
-Install Ollama:
-
-Ollama Official Website  https://ollama.com
-
-Pull required models:
-
-ollama pull qwen2.5:7b
-
-Optional lightweight classifier model:
-
+```bash
 ollama pull qwen2.5:1.5b
-
-Verify:
-
+# Optional higher-quality model (if RAM allows):
+# ollama pull qwen2.5:3b
 ollama list
+```
+
+### 5. Configure Environment
+
+```bash
+cp .env.example .env
+# Edit .env to set OLLAMA_MODEL, WAKE_WORD, WAKE_WORD_THRESHOLD, etc.
+```
 
 ---
 
-# Running The Agent
+## Running DeskPilot
 
-## Development Mode
+### Foreground Mode
 
+```bash
+/home/<user>/Desktop/DESKPILOT/start_deskpilot.sh
+```
+
+### Background Mode
+
+```bash
+/home/<user>/Desktop/DESKPILOT/start_deskpilot.sh --bg
+```
+
+Logs are written to `logs/deskpilot.log` (and `logs/ollama.log` if Ollama was started by the script).
+
+### Development Mode & Smoke Tests
+
+```bash
+cd /home/<user>/Desktop/DESKPILOT
+source .venv/bin/activate
 python -m src.deskpilot.main
+python tests/smoke_test.py
+```
 
 ---
 
-## Background Mode
+## Autostart on Ubuntu Login
 
-pythonw -m src.deskpilot.main
+### Option A: XDG Desktop Entry (`deskpilot.desktop`)
+
+```bash
+mkdir -p ~/.config/autostart
+cp /home/<user>/Desktop/DESKPILOT/deskpilot.desktop ~/.config/autostart/
+```
+
+*(Note: update the absolute paths inside `~/.config/autostart/deskpilot.desktop` if your username is not `varshitha`.)*
+
+### Option B: systemd User Service (`deskpilot.service`)
+
+```bash
+mkdir -p ~/.config/systemd/user
+cp /home/<user>/Desktop/DESKPILOT/deskpilot.service ~/.config/systemd/user/
+systemctl --user daemon-reload
+systemctl --user enable deskpilot.service
+systemctl --user start deskpilot.service
+```
+
+Check status and logs:
+
+```bash
+systemctl --user status deskpilot.service
+journalctl --user -u deskpilot.service -f
+```
 
 ---
 
-# Startup Automation
-
-## By Using Startup Folder
-
-Double-click start_deskpilot.bat to launch WPA
-
-( or )
-
-Win + R → shell:startup
-
-Place a shortcut to `start_deskpilot.bat` inside.
-
-it will be automatically triggered on logging into your pc.
-
-
-
-# System Tray
+## System Tray
 
 Features:
 
-- Pause assistant
-- Resume assistant
-- Open logs
-- Clear memory
-- Exit WPA
+- Pause / Resume assistant
+- Open Logs (`logs/` via `xdg-open`)
+- Clear Memory
+- Exit DeskPilot
 
-Runs using:
-
-- pystray
-- Pillow
-
-
-
-# Performance Optimizations
-
-Implemented:
-
-- Warm model loading
-- Lazy memory initialization
-- GPU inference
-- Deterministic routing
-- tool calling without using llm
+On GNOME + Wayland, install `gnome-shell-extension-appindicator` if the tray icon does not appear, or log in using **"Ubuntu on Xorg"**.
 
 ---
 
-# Current Limitations
+## Safety Features
 
-- Windows only
-- Some Store apps need special handling
-- Long responses may increase latency
-
----
-
-
-# Safety Features
-
-Risky tools require confirmation:
-
-Examples:
+Risky tools require verbal confirmation before execution:
 
 - File deletion
 - Volume changes
@@ -308,36 +230,30 @@ Examples:
 
 Example:
 
+```text
 Set volume to 40 percent
 → Should I proceed?
+```
 
+---
 
-# Example Commands
+## Example Commands
 
-## Applications
+### Applications
 
-Open Chrome
-Open VS Code
-Open Settings
-Open Task Manager
+- `Open Firefox`
+- `Open Calculator`
+- `Open File Manager`
 
-## Websites
+### Websites
 
-Open YouTube
-Open GitHub
-Open Gmail
+- `Open YouTube`
+- `Open GitHub`
+- `Open Gmail`
 
-## System
+### System & Memory
 
-How is my battery?
-Set volume to 50 percent
-
-
-
-Useful for:
-
-- debugging
-- startup failures
-- tool execution tracing
-- wake word diagnostics
-
+- `What time is it?`
+- `How is my battery?`
+- `Set volume to 50 percent`
+- `Remember that I prefer dark mode`

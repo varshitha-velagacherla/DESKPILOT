@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-SQLite Memory Viewer - Displays all content stored in WPA's SQLite memory.
+SQLite Memory Viewer - Displays all content stored in DeskPilot's SQLite memory.
 Run: python tests/view_sqlite_memory.py
 """
 
@@ -57,7 +57,7 @@ def check_database_exists():
         return True
     else:
         print(f"Status: ❌ NOT FOUND")
-        print("\nThe database will be created when you first run WPA.")
+        print("\nThe database will be created when you first run DeskPilot.")
         return False
 
 
@@ -69,7 +69,7 @@ def view_all_interactions(limit=None):
     
     if not interactions:
         print("\n❌ No interactions found in database.")
-        print("   Start using WPA to build up memory!")
+        print("   Start using DeskPilot to build up memory!")
         return
     
     print(f"\nTotal interactions: {len(interactions)}")
@@ -303,7 +303,7 @@ def main():
     
     # Check if database exists
     if not check_database_exists():
-        print("\n💡 Tip: Run WPA first to create the database and start building memory.")
+        print("\n💡 Tip: Run DeskPilot first to create the database and start building memory.")
         return
     
     while True:

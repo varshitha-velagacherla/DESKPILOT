@@ -693,3 +693,22 @@ def get_all_preferences() -> List[str]:
         )
 
         return []
+
+
+
+def clear_all_memory() -> bool:
+    """Delete all stored documents from ChromaDB preference and history collections."""
+    try:
+        _init()
+        for col in (_prefs_collection, _history_collection):
+            if col is None:
+                continue
+            existing = col.get()
+            ids = existing.get("ids", [])
+            if ids:
+                col.delete(ids=ids)
+        logger.info("[chroma] cleared all preferences and interaction summaries")
+        return True
+    except Exception as e:
+        logger.error(f"[chroma] clear_all_memory failed: {e}")
+        return False

@@ -50,7 +50,7 @@ def test_agent(user_input: str):
     print(f"Confidence: {intent.get('confidence', 0):.2f}")
     
     response = result.get("agent_response", "")
-    print(f"\nWPA: {response}")
+    print(f"\nDeskPilot: {response}")
     
     return response
 

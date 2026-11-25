@@ -70,6 +70,7 @@ def classify_node(state: AgentState) -> dict:
 
     return {
         "intent_result": intent_result,
+        "memory_context": memory_context,
         "messages": [HumanMessage(content=user_input)],
         "turn_number": state.get("turn_number", 0) + 1,
     }
@@ -230,6 +231,7 @@ def respond_node(state: AgentState) -> dict:
         tool_output=tool_output,
         user_input=user_input,
         history=history,
+        memory_context=state.get("memory_context", ""),
     )
 
     # logger.info(

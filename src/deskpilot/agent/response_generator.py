@@ -10,6 +10,7 @@ The LLM never decides WHAT to do here — only HOW to say the result.
 
 import logging
 import os
+import re
 from typing import List
 from dotenv import load_dotenv
 load_dotenv()  # take environment variables from .env file
@@ -29,6 +30,7 @@ _llm = ChatOllama(
     model=MODEL_NAME or "qwen2.5:1.5b",
     temperature=0.4,
     base_url="http://localhost:11434",
+    num_ctx=1536,
     num_predict=100,
 )
 
@@ -79,13 +81,14 @@ Rules:
 """
 
 CHAT_PROMPT = """
-You are WPA, the Linux Productivity Agent,
+You are DeskPilot,
 a friendly offline voice assistant running on Ubuntu.
 
 Answer the user's question or respond to their message.
 
 Rules:
 - Answer in at most 2 short sentences
+- Start directly with the answer (no "Sure!" or filler intro)
 - Keep replies concise and direct for voice output
 - No markdown
 - No bullet points
@@ -155,6 +158,7 @@ def generate_response(
     tool_output: str = "",
     user_input: str = "",
     history: List[BaseMessage] = None,
+    memory_context: str = "",
 ) -> str:
     """
     Generate a natural spoken response.
@@ -212,10 +216,19 @@ def generate_response(
 
         elif response_type == "chat":
 
-            messages = [
-                SystemMessage(content=CHAT_PROMPT),
+            clean_history = [
+                msg for msg in history
+                if not (msg.type == "ai" and msg.content.startswith("[tool:"))
+            ]
 
-                *history[-6:],   # last 3 turns for context
+            sys_prompt = CHAT_PROMPT
+            if memory_context:
+                sys_prompt = f"{CHAT_PROMPT}\n\nMEMORY CONTEXT:\n{memory_context}"
+
+            messages = [
+                SystemMessage(content=sys_prompt),
+
+                *clean_history[-6:],   # last 3 turns for context
 
                 HumanMessage(content=user_input),
             ]
@@ -268,15 +281,17 @@ def generate_response(
 
         text = response.content.strip()
 
-        # Strip any markdown that leaked through
+        # Strip any markdown or leaked [tool:...] prefix
+        text = re.sub(r"^\[tool:[^\]]+\][^\n]*\n*", "", text, flags=re.IGNORECASE)
         for ch in ["**", "*", "##", "#", "`", "_"]:
             text = text.replace(ch, "")
 
         text = text.strip()
-
-        # logger.info(
-        #     f"[responder] output: {text[:100]}"
-        # )
+        if response_type == "chat" and text:
+            sentences = re.findall(r"[^.!?]+[.!?]?", text)
+            sentences = [s.strip() for s in sentences if s.strip()]
+            if len(sentences) > 2:
+                text = " ".join(sentences[:2])
 
         return text or "Done."
 

@@ -1,6 +1,6 @@
 [Unit]
-Description=DeskPilot - Linux Productivity Agent
-Documentation=file:///home/varshitha/Desktop/DESKPILOT/README_UBUNTU.md
+Description=DeskPilot
+Documentation=file:///home/varshitha/Desktop/DESKPILOT/README.md
 After=network.target sound.target
 
 [Service]

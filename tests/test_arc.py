@@ -165,7 +165,7 @@ def run_turn(user_input: str, debug: bool = False) -> str:
 
     if action == "confirm":
 
-        print(f"WPA : {response}")
+        print(f"DeskPilot : {response}")
 
         print(
             f"     >>> Say 'yes' to confirm "
@@ -173,7 +173,7 @@ def run_turn(user_input: str, debug: bool = False) -> str:
         )
 
     else:
-        print(f"WPA : {response}")
+        print(f"DeskPilot : {response}")
 
     return response
 
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     print("=" * 55)
 
     print(
-        "Windows Productivity Agent "
+        "DeskPilot "
         "— Hybrid Architecture"
     )
 

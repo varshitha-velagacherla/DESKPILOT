@@ -17,6 +17,19 @@ def open_url(url: str) -> str:
         return f"Could not open URL: {e}"
 
 
+def _ddgs_text(query: str, max_results: int) -> list:
+    from duckduckgo_search import DDGS
+    for backend in ("lite", "duckduckgo", "html", "auto"):
+        try:
+            with DDGS(timeout=8) as ddgs:
+                results = list(ddgs.text(query, max_results=max_results, backend=backend))
+            if results:
+                return results
+        except Exception:
+            continue
+    return []
+
+
 @tool
 def web_search(query: str) -> str:
     """
@@ -24,15 +37,13 @@ def web_search(query: str) -> str:
     Returns top 3 results as text. Requires internet connection.
     """
     try:
-        from duckduckgo_search import DDGS
-        with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=3))
+        results = _ddgs_text(query, max_results=3)
         if not results:
             return f"No results found for: {query}"
         output = []
         for i, r in enumerate(results, 1):
-            output.append(f"{i}. {r['title']}\\n   {r['body']}\\n   URL: {r['href']}")
-        return "\\n\\n".join(output)
+            output.append(f"{i}. {r['title']}\n   {r['body']}\n   URL: {r['href']}")
+        return "\n\n".join(output)
     except Exception as e:
         return f"Search failed (check internet connection): {e}"
 
@@ -44,9 +55,7 @@ def search_and_open(query: str) -> str:
     Example: search_and_open('Python tutorials')
     """
     try:
-        from duckduckgo_search import DDGS
-        with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=1))
+        results = _ddgs_text(query, max_results=1)
         if not results:
             # Fallback: open Google search
             url = f"https://google.com/search?q={query.replace(' ', '+')}"
